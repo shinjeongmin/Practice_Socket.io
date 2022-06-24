@@ -5,6 +5,11 @@
     <title>Socket.IO 예제</title>
 </head>
 <body>
+    <select id="roomoptions" onchange="joinRoom()">
+        <option value="채팅방 1" selected>채팅방 1</option>
+        <option value="채팅방 2">채팅방 2</option>
+    </select>
+
     <ul id="messages" type="none">
         <li id="usercount"></li>
     </ul>
@@ -20,6 +25,7 @@
     
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        var roomname = "채팅방 1"
         var socket = io();
         var msgform = document.getElementById('msgform');
         var roomsText = document.getElementById('rooms');
@@ -38,12 +44,22 @@
             messageList.appendChild(messageTag);
         });
 
+        // 접속한 룸이 바뀌었을 때
+        socket.on('roomChanged', (joinedRoom) => { 
+           roomname = joinedRoom;
+           var messageList = document.getElementById('messages');
+           var messageTag = document.createElement("li");
+           messageTag.innerText = joinedRoom + "에 접속했습니다.";
+           messageList.appendChild(messageTag);
+        });
+
+
         msgform.onsubmit = (e) => {
             e.preventDefault();
             var msginput = document.getElementById('msginput');
 
             // socket.emit으로 서버에 신호를 전달
-            socket.emit('message', msginput.value);
+            socket.emit('message', msginput.value, roomname);
 
             msginput.value = "";
         };
@@ -63,6 +79,14 @@
                     roomsText.innerHTML += room + "<br>";
                 }
             });
+        }
+
+        function joinRoom() { // 방 접속 버튼 클릭시
+            var roomOptions = document.getElementById("roomoptions");
+            var roomToJoin = roomOptions.options[roomOptions.selectedIndex].value;
+
+            // 서버에 룸 전환 신호를 발신
+            socket.emit('joinRoom', roomname, roomToJoin);
         }
     </script>
 </body>
