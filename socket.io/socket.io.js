@@ -2,6 +2,7 @@ var app = require('express')();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var path = require('path');
+const debug = io.of('/debug');
 
 app.get('/', function(req, res){
     var options = {
@@ -14,7 +15,7 @@ app.get('/', function(req, res){
 
 io.on('connection', (socket) => {   //연결이 들어오면 실행되는 이벤트
     // socket 변수에는 실행 시점에 연결한 상대와 연결된 소켓의 객체가 들어있다.
-    
+
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
     socket.emit('usercount', io.engine.clientsCount);
 
@@ -25,6 +26,14 @@ io.on('connection', (socket) => {   //연결이 들어오면 실행되는 이벤
 
         // io.emit으로 연결된 모든 소켓들에 신호를 보낼 수 있다.
         io.emit('message', msg);
+    });
+});
+
+debug.on('connection', (socket) =>{
+
+    socket.on('getRooms', ()=>{
+        console.log(Array.from(io.sockets.adapter.rooms.keys()));
+        socket.emit('rooms', Array.from(io.sockets.adapter.rooms.keys()));
     });
 });
 

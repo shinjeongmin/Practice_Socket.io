@@ -14,10 +14,16 @@
         <button type="submit">전송</button>
     </form>
 
+    <button onclick="getRooms()">방 목록 가져오기</button>
+
+    <p id="rooms"></p>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
         var msgform = document.getElementById('msgform');
+        var roomsText = document.getElementById('rooms');
+
         // socket.on 함수로 서버에서 전달하는 신호를 수신
         socket.on('usercount', (count) => {
             var userCounter = document.getElementById('usercount');
@@ -41,6 +47,23 @@
 
             msginput.value = "";
         };
+
+        function getRooms() {
+            // url을 지정하여 들어갈 네임스페이스를 선택
+            var debug = io.connect('http://localhost:3000/debug');
+
+            debug.emit('getRooms');
+
+            debug.on('rooms', (rooms) => {
+                // 룸 목록 업데이트
+                roomsText.textContent = "";
+                console.log(rooms);
+                for(var room of rooms){
+                    console.log("room : " + room);
+                    roomsText.innerHTML += room + "<br>";
+                }
+            });
+        }
     </script>
 </body>
 </html>
